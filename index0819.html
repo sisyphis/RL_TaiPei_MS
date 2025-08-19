@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專案儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        .kpi-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-6 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">紅北車裝修施工項目儀表板</h1>
+            <p class="text-gray-500 mt-1">更新日期：2025年8月19日 (星期二)</p>
+        </header>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div id="kpi-overall-progress" class="kpi-card bg-white p-6 rounded-2xl shadow-md"></div>
+            <div id="kpi-in-progress" class="kpi-card bg-white p-6 rounded-2xl shadow-md"></div>
+            <div id="kpi-at-risk" class="kpi-card bg-white p-6 rounded-2xl shadow-md"></div>
+            <div id="kpi-completed" class="kpi-card bg-white p-6 rounded-2xl shadow-md"></div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Progress Charts Section -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">各項進度概覽</h2>
+                <div id="progress-charts" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-8">
+                    <!-- Charts will be injected here -->
+                </div>
+            </div>
+
+            <!-- Risk & Milestones Section -->
+            <div class="space-y-8">
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        風險與問題
+                    </h2>
+                    <ul id="risk-items" class="space-y-4 text-gray-700">
+                        <!-- Risk items will be injected here -->
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        近期里程碑
+                    </h2>
+                    <ul id="milestone-items" class="space-y-3 text-gray-700">
+                        <!-- Milestone items will be injected here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Updated Data Source ---
+        const overallProjectProgress = { actual: 53.5, scheduled: 46.6 };
+        const currentProblems = "詢問處關聯單位佈線遲延。";
+        const tasks = [
+            { name: '1. 新建PAO', start: '2025-06-16', end: '2025-09-25', progress: 40, todaysWork: '拆除PAO東邊。' },
+            { name: '2. 服務盒', start: '2025-07-21', end: '2025-09-25', progress: 25, todaysWork: '東側服務盒骨架。' },
+            { name: '3. 西側會面點', start: '2025-08-18', end: '2025-09-25', progress: 5, todaysWork: '平板燈骨架。' },
+            { name: '4. 牆面更新', start: '2025-08-11', end: '2025-11-30', progress: 5, todaysWork: '未施工。' },
+            { name: '5. 地磚', start: '2025-06-01', end: '2025-11-30', progress: 80, todaysWork: '北側廁所外低影響工法25㎡。' },
+            { name: '6. 北側售票區', start: '2025-09-14', end: '2025-10-30', progress: 0, todaysWork: '拆除牆面裝飾板。' },
+            { name: '7. 圓柱踢腳及貼膜', start: '2025-09-30', end: '2025-12-10', progress: 5, todaysWork: '未施工。' }
+        ];
+        const today = new Date('2025-08-19');
+
+        // --- KPI Calculation ---
+        const inProgressTasks = tasks.filter(t => t.progress > 0 && t.progress < 100).length;
+        const completedTasks = tasks.filter(t => t.progress === 100).length;
+        
+        const atRiskTasks = tasks.filter(t => {
+            const startDate = new Date(t.start);
+            const daysSinceStart = (today - startDate) / (1000 * 60 * 60 * 24);
+            const daysUntilStart = (startDate - today) / (1000 * 60 * 60 * 24);
+            const isLowProgress = startDate <= today && daysSinceStart > 7 && t.progress < 10;
+            const isStartingSoon = daysUntilStart > 0 && daysUntilStart <= 14 && t.progress === 0;
+            return isLowProgress || isStartingSoon;
+        });
+        const atRiskCount = atRiskTasks.length;
+
+        // --- Render KPI Cards ---
+        const progressDiff = (overallProjectProgress.actual - overallProjectProgress.scheduled).toFixed(1);
+        const progressStatusText = progressDiff >= 0 
+            ? `<span class="text-sm font-semibold text-green-600">▲ 超前 ${progressDiff}%</span>` 
+            : `<span class="text-sm font-semibold text-red-600">▼ 落後 ${Math.abs(progressDiff)}%</span>`;
+        
+        document.getElementById('kpi-overall-progress').innerHTML = `
+            <div class="text-sm font-medium text-gray-500">整體專案進度</div>
+            <div class="flex items-baseline mt-2">
+                <span class="text-4xl font-bold text-blue-600">${overallProjectProgress.actual}%</span>
+                <span class="text-lg text-gray-400 ml-2">/ ${overallProjectProgress.scheduled}%</span>
+            </div>
+            <div class="mt-1">${progressStatusText} (實際/預訂)</div>
+        `;
+        document.getElementById('kpi-in-progress').innerHTML = `
+            <div class="text-sm font-medium text-gray-500">進行中任務</div>
+            <div class="text-4xl font-bold text-green-600 mt-2">${inProgressTasks}</div>
+        `;
+        document.getElementById('kpi-at-risk').innerHTML = `
+            <div class="text-sm font-medium text-gray-500">風險項目</div>
+            <div class="text-4xl font-bold text-red-600 mt-2">${atRiskCount}</div>
+        `;
+        document.getElementById('kpi-completed').innerHTML = `
+            <div class="text-sm font-medium text-gray-500">已完成任務</div>
+            <div class="text-4xl font-bold text-gray-400 mt-2">${completedTasks}</div>
+        `;
+
+        // --- Render Progress Donut Charts ---
+        const chartsContainer = document.getElementById('progress-charts');
+        tasks.forEach(task => {
+            const chartWrapper = document.createElement('div');
+            chartWrapper.className = 'text-center flex flex-col h-full';
+            
+            const canvasContainer = document.createElement('div');
+            canvasContainer.className = 'relative mx-auto w-full max-w-[120px] h-24';
+            const canvas = document.createElement('canvas');
+            canvasContainer.appendChild(canvas);
+            chartWrapper.appendChild(canvasContainer);
+
+            const nameLabel = document.createElement('p');
+            // --- 修正開始：將 text-sm 改為 text-base 以加大字體 ---
+            nameLabel.className = 'text-base font-medium text-gray-800 mt-2 truncate';
+            // --- 修正結束 ---
+            nameLabel.textContent = task.name.split('. ')[1];
+            nameLabel.title = task.name;
+            chartWrapper.appendChild(nameLabel);
+
+            const dateLabel = document.createElement('p');
+            const formattedStart = task.start.substring(5).replace('-', '/');
+            const formattedEnd = task.end.substring(5).replace('-', '/');
+            dateLabel.className = 'text-xs text-gray-400 mt-1';
+            dateLabel.textContent = `${formattedStart} - ${formattedEnd}`;
+            chartWrapper.appendChild(dateLabel);
+
+            const workLabel = document.createElement('p');
+            const workText = task.todaysWork === '未施工。' ? '本日未施工' : task.todaysWork;
+            workLabel.className = `text-[11px] mt-1 h-8 ${task.todaysWork === '未施工。' ? 'text-gray-400' : 'text-gray-600'}`;
+            workLabel.textContent = workText;
+            chartWrapper.appendChild(workLabel);
+
+            chartsContainer.appendChild(chartWrapper);
+
+            let ringColor = '#3b82f6';
+            let textColor = '#1d4ed8';
+            if (task.progress >= 80) {
+                ringColor = '#16a34a';
+                textColor = '#14532d';
+            } else if (atRiskTasks.includes(task)) {
+                ringColor = '#ef4444';
+                textColor = '#991b1b';
+            }
+
+            new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [task.progress, 100 - task.progress],
+                        backgroundColor: [ringColor, '#e5e7eb'],
+                        borderColor: ['#ffffff'],
+                        borderWidth: 2,
+                        circumference: 180,
+                        rotation: 270,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                },
+                plugins: [{
+                    id: 'doughnutText',
+                    afterDraw(chart) {
+                        const { ctx, width, height } = chart;
+                        ctx.restore();
+                        const fontSize = (height / 80).toFixed(2);
+                        ctx.font = `bold ${fontSize}em Inter, sans-serif`;
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = textColor;
+                        const text = `${task.progress}%`;
+                        const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                        const textY = height / 1.5;
+                        ctx.fillText(text, textX, textY);
+                        ctx.save();
+                    }
+                }]
+            });
+        });
+
+        // --- Render Risk and Milestone Lists ---
+        const riskList = document.getElementById('risk-items');
+        const problemLi = document.createElement('li');
+        problemLi.className = 'flex items-start p-3 bg-red-50 rounded-lg';
+        problemLi.innerHTML = `
+            <span class="font-semibold text-red-600 mr-2">!</span>
+            <div>
+                <p class="font-semibold text-red-800">目前遭遇問題</p>
+                <p class="text-sm text-red-700">${currentProblems}</p>
+            </div>
+        `;
+        riskList.appendChild(problemLi);
+
+        if (atRiskTasks.length > 0) {
+            atRiskTasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                li.innerHTML = `
+                    <span class="font-semibold text-yellow-600 mr-2">●</span>
+                    <div>
+                        <p class="font-semibold">${task.name.split('. ')[1]}</p>
+                        <p class="text-xs text-gray-500">${task.progress === 0 ? `即將於 ${task.start.substring(5)} 開始` : `進度僅 ${task.progress}%，需關注`}</p>
+                    </div>
+                `;
+                riskList.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.className = 'text-gray-500 text-sm';
+            li.textContent = '目前無其他顯著風險項目。';
+            riskList.appendChild(li);
+        }
+
+        const milestoneList = document.getElementById('milestone-items');
+        const upcomingTasks = tasks.filter(t => {
+            const startDate = new Date(t.start);
+            const daysUntilStart = (startDate - today) / (1000 * 60 * 60 * 24);
+            return daysUntilStart > 0 && daysUntilStart <= 30;
+        }).sort((a, b) => new Date(a.start) - new Date(b.start));
+
+        if (upcomingTasks.length > 0) {
+            upcomingTasks.slice(0, 3).forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                li.innerHTML = `
+                    <span class="font-semibold text-blue-600 mr-2">▶</span>
+                    <div>
+                        <p class="font-semibold">${task.name.split('. ')[1]}</p>
+                        <p class="text-xs text-gray-500">預計開始日期：${task.start.substring(5)}</p>
+                    </div>
+                `;
+                milestoneList.appendChild(li);
+            });
+        } else {
+            milestoneList.innerHTML = `<li class="text-gray-500">未來一個月內無新項目開始。</li>`;
+        }
+    </script>
+</body>
+</html>
