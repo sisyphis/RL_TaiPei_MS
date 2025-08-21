@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日營養追蹤</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Chart.js CDN for dynamic charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDKs for authentication and Firestore -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Expose to global scope for the main script
+        window.firebase = {
+            auth,
+            db,
+            appId,
+            initialAuthToken,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            collection,
+            onSnapshot,
+            query,
+            doc,
+            deleteDoc,
+            setDoc,
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e; /* Dark purple/blue background */
+            color: #ffffff;
+        }
+        .container {
+            max-width: 960px;
+        }
+        .card {
+            background-color: #2b2b45; /* Slightly lighter card background */
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        input, button {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+        button {
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        th, td {
+            background-color: #3f3f6e; /* Table header/cell color */
+        }
+        th {
+            background-color: #6366f1; /* Purple table header */
+            color: white;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="container mx-auto p-6 bg-gray-800 rounded-3xl shadow-lg">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-indigo-400">每日營養追蹤儀表板 💪</h1>
+        <p class="text-center text-sm mb-6 text-gray-400">你的用戶 ID: <span id="userId" class="font-mono text-xs">載入中...</span></p>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center my-8">
+            <svg class="animate-spin h-12 w-12 text-indigo-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-2 text-indigo-300">資料載入中...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="mainContent" class="hidden">
+            <!-- Data Input Card -->
+            <div class="card p-6 mb-6">
+                <h2 class="text-2xl font-semibold mb-4 text-indigo-300">新增每日數據</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <input type="date" id="inputDate" class="w-full bg-gray-700 text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-indigo-500" required>
+                    <input type="number" id="inputCalories" placeholder="熱量 (大卡)" class="w-full bg-gray-700 text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-indigo-500" required>
+                    <input type="number" id="inputProtein" placeholder="蛋白質 (公克)" class="w-full bg-gray-700 text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-indigo-500" required>
+                    <input type="number" id="inputCarbs" placeholder="碳水化合物 (公克)" class="w-full bg-gray-700 text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-indigo-500" required>
+                    <input type="number" id="inputFat" placeholder="脂肪 (公克)" class="w-full bg-gray-700 text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-indigo-500" required>
+                    <button id="addDataBtn" class="sm:col-span-2 lg:col-span-5 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md">新增數據</button>
+                </div>
+                <p id="messageBox" class="text-center mt-4 hidden text-red-400"></p>
+            </div>
+
+            <!-- Chart Card -->
+            <div class="card p-6 mb-6">
+                <h2 class="text-2xl font-semibold mb-4 text-indigo-300">數據趨勢圖表</h2>
+                <canvas id="nutritionChart" class="w-full h-80"></canvas>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-indigo-300">歷史數據總覽</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm rounded-lg">
+                        <thead>
+                            <tr class="bg-indigo-600">
+                                <th class="p-4 text-left rounded-tl-lg">日期</th>
+                                <th class="p-4 text-left">熱量 (大卡)</th>
+                                <th class="p-4 text-left">蛋白質 (公克)</th>
+                                <th class="p-4 text-left">碳水化合物 (公克)</th>
+                                <th class="p-4 text-left rounded-tr-lg">脂肪 (公克)</th>
+                                <th class="p-4 text-left rounded-tr-lg">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody" class="divide-y divide-gray-700">
+                            <!-- Data rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const { auth, db, appId, initialAuthToken, signInAnonymously, signInWithCustomToken, onAuthStateChanged, collection, onSnapshot, query, doc, deleteDoc, setDoc } = window.firebase;
+
+        const loadingDiv = document.getElementById('loading');
+        const mainContentDiv = document.getElementById('mainContent');
+        const userIdSpan = document.getElementById('userId');
+        const addDataBtn = document.getElementById('addDataBtn');
+        const messageBox = document.getElementById('messageBox');
+        
+        let userId = '';
+        let nutritionData = [];
+        let chartInstance;
+        let isAuthReady = false;
+
+        function showMessage(message, type = 'error') {
+            messageBox.textContent = message;
+            messageBox.className = `text-center mt-4 ${type === 'error' ? 'text-red-400' : 'text-green-400'}`;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        async function initializeApp() {
+            try {
+                // Wait for auth state to be resolved
+                await new Promise((resolve, reject) => {
+                    const unsubscribe = onAuthStateChanged(auth, user => {
+                        if (user) {
+                            userId = user.uid;
+                            userIdSpan.textContent = userId;
+                            isAuthReady = true;
+                            loadingDiv.classList.add('hidden');
+                            mainContentDiv.classList.remove('hidden');
+                            unsubscribe(); // Unsubscribe to prevent re-execution
+                            resolve();
+                        } else {
+                            if (initialAuthToken) {
+                                signInWithCustomToken(auth, initialAuthToken).catch(reject);
+                            } else {
+                                signInAnonymously(auth).catch(reject);
+                            }
+                        }
+                    });
+                });
+                
+                // Now that auth is ready, listen for data
+                listenForData();
+
+            } catch (error) {
+                console.error("Firebase Auth initialization error:", error);
+                showMessage("驗證失敗，請再試一次。");
+                loadingDiv.classList.add('hidden');
+                mainContentDiv.classList.add('hidden'); // Hide content on failure
+            }
+        }
+
+        function renderChart() {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            const ctx = document.getElementById('nutritionChart').getContext('2d');
+            
+            const sortedData = [...nutritionData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const dates = sortedData.map(d => d.date);
+            const calories = sortedData.map(d => d.calories);
+            const protein = sortedData.map(d => d.protein);
+            const carbs = sortedData.map(d => d.carbs);
+            const fat = sortedData.map(d => d.fat);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: '熱量 (大卡)',
+                            data: calories,
+                            borderColor: '#8186d3',
+                            backgroundColor: 'rgba(129, 134, 211, 0.2)',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: '蛋白質 (公克)',
+                            data: protein,
+                            borderColor: '#4ade80',
+                            backgroundColor: 'rgba(74, 222, 128, 0.2)',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: '碳水化合物 (公克)',
+                            data: carbs,
+                            borderColor: '#facc15',
+                            backgroundColor: 'rgba(250, 204, 21, 0.2)',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: '脂肪 (公克)',
+                            data: fat,
+                            borderColor: '#fb923c',
+                            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+                            tension: 0.3,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '日期',
+                                color: '#e0e0e0'
+                            },
+                            ticks: {
+                                color: '#e0e0e0'
+                            },
+                            grid: {
+                                color: '#333'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '數值',
+                                color: '#e0e0e0'
+                            },
+                            ticks: {
+                                color: '#e0e0e0'
+                            },
+                            grid: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTable() {
+            const dataTableBody = document.getElementById('dataTableBody');
+            dataTableBody.innerHTML = '';
+            
+            const sortedData = [...nutritionData].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" class="p-4 text-center text-gray-400">尚無數據</td>`;
+                dataTableBody.appendChild(row);
+                return;
+            }
+
+            sortedData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-4">${item.date}</td>
+                    <td class="p-4">${item.calories}</td>
+                    <td class="p-4">${item.protein}</td>
+                    <td class="p-4">${item.carbs}</td>
+                    <td class="p-4">${item.fat}</td>
+                    <td class="p-4"><button class="text-red-400 hover:text-red-600" onclick="deleteEntry('${item.id}')">刪除</button></td>
+                `;
+                dataTableBody.appendChild(row);
+            });
+        }
+        
+        async function addData(data) {
+            if (!isAuthReady) {
+                showMessage("Authentication not ready. Please wait.");
+                console.error("Authentication not ready. Data not added.");
+                return;
+            }
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/nutrition_tracking`, data.date);
+                await setDoc(docRef, data);
+                showMessage("數據新增/更新成功！", 'success');
+            } catch (e) {
+                console.error("Error adding/updating document: ", e);
+                showMessage("數據新增/更新失敗，請再試一次。");
+            }
+        }
+        
+        window.deleteEntry = async (docId) => {
+            if (!isAuthReady) {
+                showMessage("Authentication not ready. Please wait.");
+                console.error("Authentication not ready. Data not deleted.");
+                return;
+            }
+            console.log(`Deleting entry with ID: ${docId}`);
+            try {
+                await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/nutrition_tracking`, docId));
+                showMessage("數據刪除成功！", 'success');
+            } catch (e) {
+                console.error("Error deleting document: ", e);
+                showMessage("數據刪除失敗，請再試一次。");
+            }
+        };
+
+        addDataBtn.addEventListener('click', () => {
+            const date = document.getElementById('inputDate').value;
+            const calories = parseFloat(document.getElementById('inputCalories').value);
+            const protein = parseFloat(document.getElementById('inputProtein').value);
+            const carbs = parseFloat(document.getElementById('inputCarbs').value);
+            const fat = parseFloat(document.getElementById('inputFat').value);
+
+            if (date && !isNaN(calories) && !isNaN(protein) && !isNaN(carbs) && !isNaN(fat)) {
+                const newEntry = {
+                    date,
+                    calories,
+                    protein,
+                    carbs,
+                    fat,
+                    timestamp: new Date().toISOString()
+                };
+                addData(newEntry);
+                
+                document.getElementById('inputDate').value = '';
+                document.getElementById('inputCalories').value = '';
+                document.getElementById('inputProtein').value = '';
+                document.getElementById('inputCarbs').value = '';
+                document.getElementById('inputFat').value = '';
+            } else {
+                showMessage("請輸入所有有效的數據。");
+            }
+        });
+        
+        function listenForData() {
+            const nutritionCol = collection(db, `artifacts/${appId}/users/${userId}/nutrition_tracking`);
+
+            // Listen for real-time changes
+            onSnapshot(nutritionCol, (querySnapshot) => {
+                const docs = [];
+                querySnapshot.forEach((doc) => {
+                    docs.push({ id: doc.id, ...doc.data() });
+                });
+                nutritionData = docs;
+                renderChart();
+                renderTable();
+            }, (error) => {
+                console.error("Error listening for data: ", error);
+                showMessage("無法載入數據，請檢查連線。");
+            });
+        }
+
+        initializeApp();
+    </script>
+</body>
+</html>
