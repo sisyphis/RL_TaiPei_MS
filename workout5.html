@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日數據追蹤儀表板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #6200ea;
+            --secondary-color: #03dac6;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1, h2 {
+            text-align: center;
+            color: var(--text-color);
+            margin: 20px 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px; 
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+        tbody tr:hover {
+            background-color: #383838;
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>變壯計畫：數據儀表板 💪</h1>
+
+    <div class="container">
+        <!-- 營養數據圖表區塊 -->
+        <div class="card">
+            <h2>營養數據視覺化</h2>
+            <div class="chart-container">
+                <canvas id="calorieChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="proteinChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="carbsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 訓練數據圖表區塊 -->
+        <div class="card">
+            <h2>總訓練量視覺化</h2>
+            <div class="chart-container">
+                <canvas id="workoutChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 歷史數據表格區塊 -->
+        <div class="card">
+            <h2>歷史數據總覽</h2>
+            <div class="table-container">
+                <h3>每日營養攝取數據</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>總熱量 (大卡)</th>
+                            <th>蛋白質 (公克)</th>
+                            <th>碳水化合物 (公克)</th>
+                            <th>脂肪 (公克)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>8/18</td><td>2,254.8</td><td>110.8</td><td>201.4</td><td>71.2</td></tr>
+                        <tr><td>8/19</td><td>2,555.3</td><td>134.85</td><td>262</td><td>84</td></tr>
+                        <tr><td>8/20</td><td>2,459.5</td><td>116.25</td><td>257.9</td><td>82.9</td></tr>
+                        <tr><td>8/21 (部分)</td><td>750</td><td>22</td><td>80</td><td>30</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top:20px;">每日總訓練量數據</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>訓練項目</th>
+                            <th>重量 (kg)</th>
+                            <th>次數</th>
+                            <th>組數</th>
+                            <th>單項總訓練量 (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>8/18</td><td>啞鈴深蹲</td><td>10</td><td>12</td><td>3</td><td>360</td></tr>
+                        <tr><td></td><td>啞鈴划船</td><td>10</td><td>10</td><td>3</td><td>300</td></tr>
+                        <tr><td></td><td>啞鈴臥推</td><td>10</td><td>10</td><td>3</td><td>300</td></tr>
+                        <tr><td></td><td>啞鈴肩上推舉</td><td>10</td><td>10</td><td>3</td><td>300</td></tr>
+                        <tr><td>**8/18 總計**</td><td colspan="4"></td><td>**1,260**</td></tr>
+                        <tr><td>8/19</td><td>集中彎舉</td><td>6</td><td>12</td><td>4</td><td>288</td></tr>
+                        <tr><td>**8/19 總計**</td><td colspan="4"></td><td>**288**</td></tr>
+                        <tr><td>8/20</td><td>啞鈴深蹲</td><td>12</td><td>12</td><td>3</td><td>432</td></tr>
+                        <tr><td></td><td>啞鈴划船</td><td>10</td><td>10</td><td>4</td><td>400</td></tr>
+                        <tr><td></td><td>啞鈴臥推</td><td>10</td><td>12</td><td>4</td><td>480</td></tr>
+                        <tr><td></td><td>啞鈴肩上推舉</td><td>6</td><td>10</td><td>3</td><td>180</td></tr>
+                        <tr><td></td><td>啞鈴飛鳥</td><td>6</td><td>12</td><td>4</td><td>288</td></tr>
+                        <tr><td>**8/20 總計**</td><td colspan="4"></td><td>**1,780**</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 歷史數據
+        const dates = ["8/18", "8/19", "8/20", "8/21"];
+        const workoutDates = ["8/18", "8/19", "8/20"];
+
+        const calorieData = {
+            actual: [2254.8, 2555.3, 2459.5, 750],
+            target: [2358, 2358, 2358, 2358]
+        };
+        const proteinData = {
+            actual: [110.8, 134.85, 116.25, 22],
+            target: [177, 177, 177, 177]
+        };
+        const carbsData = {
+            actual: [201.4, 262, 257.9, 80],
+            target: [324, 324, 324, 324]
+        };
+        const workoutVolume = [1260, 288, 1780];
+
+        // 圖表配置函數
+        function createChart(ctxId, chartTitle, labels, actualData, targetData, yAxisLabel) {
+            const ctx = document.getElementById(ctxId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "實際攝取量",
+                            data: actualData,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: "每日目標",
+                            data: targetData,
+                            borderColor: 'rgb(255, 99, 132)',
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: chartTitle,
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            color: '#e0e0e0' // 修正：圖表標題顏色
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} ${yAxisLabel}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: yAxisLabel,
+                                color: '#e0e0e0' // 修正：Y軸單位文字顏色
+                            },
+                            ticks: {
+                                color: '#e0e0e0' // Y軸數字顏色
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0e0' // X軸數字顏色
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 訓練量圖表配置函數
+        function createWorkoutChart(ctxId, chartTitle, labels, data, yAxisLabel) {
+            const ctx = document.getElementById(ctxId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "總訓練量",
+                            data: data,
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: chartTitle,
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            color: '#e0e0e0' // 修正：圖表標題顏色
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `總訓練量: ${context.raw} ${yAxisLabel}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: yAxisLabel,
+                                color: '#e0e0e0' // 修正：Y軸單位文字顏色
+                            },
+                            ticks: {
+                                color: '#e0e0e0' // Y軸數字顏色
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0e0' // X軸數字顏色
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 初始化所有圖表
+        document.addEventListener('DOMContentLoaded', () => {
+            createChart('calorieChart', '每日熱量攝取與目標比較', dates, calorieData.actual, calorieData.target, '大卡 (kcal)');
+            createChart('proteinChart', '每日蛋白質攝取與目標比較', dates, proteinData.actual, proteinData.target, '公克 (g)');
+            createChart('carbsChart', '每日碳水化合物攝取與目標比較', dates, carbsData.actual, carbsData.target, '公克 (g)');
+            createWorkoutChart('workoutChart', '每日總訓練量趨勢', workoutDates, workoutVolume, '公斤 (kg)');
+        });
+    </script>
+
+</body>
+</html>
