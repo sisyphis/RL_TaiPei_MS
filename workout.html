@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增肌數據儀表板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .chart-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px 0;
+        }
+        @media (min-width: 600px) {
+            .chart-container {
+                width: 45%;
+            }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .table-section {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>增肌數據儀表板</h1>
+
+        <!-- 圖表區塊 -->
+        <div class="chart-section">
+            <div class="chart-container">
+                <h2>每日熱量攝取</h2>
+                <canvas id="calorieChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>每日蛋白質攝取</h2>
+                <canvas id="proteinChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>每日碳水化合物攝取</h2>
+                <canvas id="carbsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>每日總訓練量</h2>
+                <canvas id="totalVolumeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 歷史數據表格區塊 -->
+        <div class="table-section">
+            <h2>每日營養數據表格</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>項目</th>
+                        <th>每日目標</th>
+                        <th>實際攝取量</th>
+                        <th>差異值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="4">8/18</td>
+                        <td>總熱量 (大卡)</td>
+                        <td>2,358</td>
+                        <td>2,254.8</td>
+                        <td>-103.2</td>
+                    </tr>
+                    <tr>
+                        <td>蛋白質 (公克)</td>
+                        <td>177</td>
+                        <td>110.8</td>
+                        <td>-66.2</td>
+                    </tr>
+                    <tr>
+                        <td>碳水化合物 (公克)</td>
+                        <td>324</td>
+                        <td>201.4</td>
+                        <td>-122.6</td>
+                    </tr>
+                    <tr>
+                        <td>脂肪 (公克)</td>
+                        <td>39</td>
+                        <td>71.2</td>
+                        <td>+32.2</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="4">8/19</td>
+                        <td>總熱量 (大卡)</td>
+                        <td>2,358</td>
+                        <td>2,555.3</td>
+                        <td>+197.3</td>
+                    </tr>
+                    <tr>
+                        <td>蛋白質 (公克)</td>
+                        <td>177</td>
+                        <td>134.85</td>
+                        <td>-42.15</td>
+                    </tr>
+                    <tr>
+                        <td>碳水化合物 (公克)</td>
+                        <td>324</td>
+                        <td>262</td>
+                        <td>-62</td>
+                    </tr>
+                    <tr>
+                        <td>脂肪 (公克)</td>
+                        <td>39</td>
+                        <td>84</td>
+                        <td>+45</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="4">8/20</td>
+                        <td>總熱量 (大卡)</td>
+                        <td>2,358</td>
+                        <td>2,459.5</td>
+                        <td>+101.5</td>
+                    </tr>
+                    <tr>
+                        <td>蛋白質 (公克)</td>
+                        <td>177</td>
+                        <td>116.25</td>
+                        <td>-60.75</td>
+                    </tr>
+                    <tr>
+                        <td>碳水化合物 (公克)</td>
+                        <td>324</td>
+                        <td>257.9</td>
+                        <td>-66.1</td>
+                    </tr>
+                    <tr>
+                        <td>脂肪 (公克)</td>
+                        <td>39</td>
+                        <td>82.9</td>
+                        <td>+43.9</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>每日總訓練量表格</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>訓練項目</th>
+                        <th>重量 (kg)</th>
+                        <th>次數</th>
+                        <th>組數</th>
+                        <th>單項總訓練量 (kg)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="4">8/18</td>
+                        <td>啞鈴深蹲</td>
+                        <td>10</td>
+                        <td>12</td>
+                        <td>3</td>
+                        <td>360</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴划船</td>
+                        <td>10</td>
+                        <td>10</td>
+                        <td>3</td>
+                        <td>300</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴臥推</td>
+                        <td>10</td>
+                        <td>10</td>
+                        <td>3</td>
+                        <td>300</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴肩上推舉</td>
+                        <td>10</td>
+                        <td>10</td>
+                        <td>3</td>
+                        <td>300</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">**8/18 總計**</td>
+                        <td>**1,260**</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2">8/19</td>
+                        <td colspan="4">休息日，做了集中彎舉</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>集中彎舉</td>
+                        <td>6</td>
+                        <td>12</td>
+                        <td>4</td>
+                        <td>288</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">**8/19 總計**</td>
+                        <td>**288**</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="5">8/20</td>
+                        <td>啞鈴深蹲</td>
+                        <td>12</td>
+                        <td>12</td>
+                        <td>3</td>
+                        <td>432</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴划船</td>
+                        <td>10</td>
+                        <td>10</td>
+                        <td>4</td>
+                        <td>400</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴臥推</td>
+                        <td>10</td>
+                        <td>12</td>
+                        <td>4</td>
+                        <td>480</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴肩上推舉</td>
+                        <td>6</td>
+                        <td>10</td>
+                        <td>3</td>
+                        <td>180</td>
+                    </tr>
+                    <tr>
+                        <td>啞鈴飛鳥</td>
+                        <td>6</td>
+                        <td>12</td>
+                        <td>4</td>
+                        <td>288</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">**8/20 總計**</td>
+                        <td>**1,780**</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            // 數據
+            const dates = ["8/18", "8/19", "8/20"];
+            
+            // 營養數據
+            const calorieData = { actual: [2254.8, 2555.3, 2459.5], target: [2358, 2358, 2358] };
+            const proteinData = { actual: [110.8, 134.85, 116.25], target: [177, 177, 177] };
+            const carbsData = { actual: [201.4, 262, 257.9], target: [324, 324, 324] };
+
+            // 總訓練量數據
+            // 注意：8/19 的總訓練量是額外的集中彎舉，不是全身訓練，所以這裡只標示出有紀錄的日期
+            const totalVolumeDates = ["8/18", "8/19", "8/20"];
+            const totalVolumeData = { actual: [1260, 288, 1780] };
+            
+            // Chart.js 繪圖函式
+            function createChart(id, title, labels, datasets, yAxisText) {
+                const ctx = document.getElementById(id).getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: yAxisText
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 建立各個圖表
+            createChart('calorieChart', '每日熱量攝取', dates, [
+                { label: "實際攝取量", data: calorieData.actual, borderColor: "rgb(75, 192, 192)", tension: 0.1 },
+                { label: "每日目標", data: calorieData.target, borderColor: "rgb(255, 99, 132)", borderDash: [5, 5] }
+            ], '大卡 (kcal)');
+
+            createChart('proteinChart', '每日蛋白質攝取', dates, [
+                { label: "實際攝取量", data: proteinData.actual, borderColor: "rgb(54, 162, 235)", tension: 0.1 },
+                { label: "每日目標", data: proteinData.target, borderColor: "rgb(255, 99, 132)", borderDash: [5, 5] }
+            ], '公克 (g)');
+
+            createChart('carbsChart', '每日碳水化合物攝取', dates, [
+                { label: "實際攝取量", data: carbsData.actual, borderColor: "rgb(255, 159, 64)", tension: 0.1 },
+                { label: "每日目標", data: carbsData.target, borderColor: "rgb(255, 99, 132)", borderDash: [5, 5] }
+            ], '公克 (g)');
+
+            createChart('totalVolumeChart', '每日總訓練量', totalVolumeDates, [
+                { label: "總訓練量 (公斤)", data: totalVolumeData.actual, borderColor: "rgb(153, 102, 255)", tension: 0.1 }
+            ], '公斤 (kg)');
+
+        </script>
+
+    </div>
+
+</body>
+</html>
