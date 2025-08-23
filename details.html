@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的每日數據追蹤表</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0; --primary-color: #6200ea; --secondary-color: #03dac6; --border-color: #333; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1, h2 { text-align: center; color: var(--text-color); margin: 20px 0; }
+        .container { width: 100%; max-width: 900px; }
+        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--primary-color); color: white; font-weight: bold; text-transform: uppercase; }
+        tbody tr:nth-child(even) { background-color: #2a2a2a; }
+        tbody tr:hover { background-color: #383838; transition: background-color 0.3s ease; }
+        .total-row { font-weight: bold; background-color: #3a3a3a !important; color: var(--secondary-color); }
+        .total-row td:first-child { font-weight: bold; }
+        .update-time { text-align: center; margin-top: -10px; margin-bottom: 20px; font-size: 0.9em; color: #aaa; }
+        .nav-link { text-align: center; margin-bottom: 20px; }
+        .nav-link a { color: var(--secondary-color); text-decoration: none; font-size: 1.1em; padding: 8px 15px; border: 1px solid var(--secondary-color); border-radius: 8px; transition: background-color 0.3s, color 0.3s; }
+        .nav-link a:hover { background-color: var(--secondary-color); color: var(--bg-color); }
+    </style>
+</head>
+<body>
+    <h1>變壯計畫：數據總覽 💪</h1>
+    <div class="update-time">最後更新：<span id="lastUpdated"></span></div>
+    <div class="nav-link"><a href="./dashboard.html">&laquo; 返回總覽儀表板</a></div>
+    <div class="container">
+        <div class="card">
+            <h2>每日營養攝取數據 (按餐別細分)</h2>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>日期</th><th>餐別</th><th>熱量 (大卡)</th><th>蛋白質 (公克)</th><th>碳水化合物 (公克)</th><th>脂肪 (公克)</th></tr></thead>
+                    <tbody id="nutritionDetailsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <h2>每日總訓練量數據 (按項目細分)</h2>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>日期</th><th>訓練項目</th><th>重量 (kg)</th><th>次數</th><th>組數</th><th>單項總訓練量 (kg)</th></tr></thead>
+                    <tbody id="workoutDetailsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                populateTables(data.dailyRecords);
+                setLastUpdatedTime();
+            } catch (error) {
+                console.error("無法載入或解析數據:", error);
+                alert("數據載入失敗，請檢查 data.json 檔案是否存在且格式正確。");
+            }
+        });
+
+        function populateTables(records) {
+            const nutritionBody = document.getElementById('nutritionDetailsBody');
+            const workoutBody = document.getElementById('workoutDetailsBody');
+            nutritionBody.innerHTML = '';
+            workoutBody.innerHTML = '';
+
+            records.forEach(record => {
+                // --- 填充營養表格 ---
+                if (record.nutrition.meals && record.nutrition.meals.length > 0) {
+                    record.nutrition.meals.forEach((meal, index) => {
+                        const row = `<tr>
+                            <td>${index === 0 ? record.date : ''}</td>
+                            <td>${meal.type}</td>
+                            <td>${meal.calories}</td>
+                            <td>${meal.protein}</td>
+                            <td>${meal.carbs}</td>
+                            <td>${meal.fat}</td>
+                        </tr>`;
+                        nutritionBody.innerHTML += row;
+                    });
+                }
+                const nutritionTotalRow = `<tr class="total-row">
+                    <td>${(record.nutrition.meals && record.nutrition.meals.length > 0) ? '' : record.date}</td>
+                    <td>總計</td>
+                    <td>${record.nutrition.total.calories}</td>
+                    <td>${record.nutrition.total.protein}</td>
+                    <td>${record.nutrition.total.carbs}</td>
+                    <td>${record.nutrition.total.fat}</td>
+                </tr>`;
+                nutritionBody.innerHTML += nutritionTotalRow;
+
+                // --- 填充訓練表格 ---
+                if (record.workout.exercises && record.workout.exercises.length > 0) {
+                    record.workout.exercises.forEach((ex, index) => {
+                        const itemVolume = ex.weight * ex.reps * ex.sets;
+                        const row = `<tr>
+                            <td>${index === 0 ? record.date : ''}</td>
+                            <td>${ex.name}</td>
+                            <td>${ex.weight}</td>
+                            <td>${ex.reps}</td>
+                            <td>${ex.sets}</td>
+                            <td>${itemVolume.toLocaleString()}</td>
+                        </tr>`;
+                        workoutBody.innerHTML += row;
+                    });
+                }
+                const workoutTotalRow = `<tr class="total-row">
+                    <td><strong>${record.date} 總計</strong></td>
+                    <td colspan="4"></td>
+                    <td><strong>${record.workout.totalVolume.toLocaleString()}</strong></td>
+                </tr>`;
+                workoutBody.innerHTML += workoutTotalRow;
+            });
+        }
+
+        function setLastUpdatedTime() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
