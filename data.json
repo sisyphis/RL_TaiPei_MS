@@ -90,6 +90,19 @@
         ],
         "totalVolume": 1420
       }
+    },
+    {
+      "date": "8/23",
+      "nutrition": {
+        "meals": [
+          { "type": "午餐", "calories": 900, "protein": 35, "carbs": 115, "fat": 25 }
+        ],
+        "total": { "calories": 900, "protein": 35, "carbs": 115, "fat": 25 }
+      },
+      "workout": {
+        "exercises": [],
+        "totalVolume": 0
+      }
     }
   ]
 }
