@@ -95,13 +95,18 @@
       "date": "8/23",
       "nutrition": {
         "meals": [
-          { "type": "午餐", "calories": 900, "protein": 35, "carbs": 115, "fat": 25 }
+          { "type": "午餐", "calories": 900, "protein": 35, "carbs": 115, "fat": 25 },
+          { "type": "晚餐", "calories": 1350, "protein": 55, "carbs": 150, "fat": 75 },
+          { "type": "其他", "calories": 135, "protein": 7, "carbs": 10, "fat": 7.5 },
+          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
         ],
-        "total": { "calories": 900, "protein": 35, "carbs": 115, "fat": 25 }
+        "total": { "calories": 2480.8, "protein": 115.6, "carbs": 279.1, "fat": 103.6 }
       },
       "workout": {
-        "exercises": [],
-        "totalVolume": 0
+        "exercises": [
+          { "name": "上斜啞鈴臥推", "weight": 6, "reps": 12, "sets": 4 }
+        ],
+        "totalVolume": 288
       }
     }
   ]
