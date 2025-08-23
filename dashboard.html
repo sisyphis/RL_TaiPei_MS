@@ -12,7 +12,19 @@
         h1, h2 { text-align: center; color: var(--text-color); margin: 20px 0; }
         .container { width: 100%; max-width: 900px; }
         .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); margin-bottom: 20px; border: 1px solid var(--border-color); }
-        .chart-container { position: relative; width: 100%; height: 400px; }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            height: 400px; 
+            /* --- 修改 START --- */
+            margin-bottom: 40px; /* 新增：增加圖表之間的底部間距 */
+            /* --- 修改 END --- */
+        }
+        /* --- 新增 START --- */
+        .card .chart-container:last-child {
+            margin-bottom: 0; /* 新增：移除卡片中最後一個圖表的底部間距，避免多餘空白 */
+        }
+        /* --- 新增 END --- */
         .table-container { overflow-x: auto; }
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; }
         .summary-item { background-color: #2a2a2a; padding: 15px; border-radius: 8px; }
@@ -40,9 +52,9 @@
         </div>
         <div class="card">
             <h2>營養數據視覺化</h2>
-            <div class="chart-container"><canvas id="calorieChart"></canvas><BR></div>
-            <div class="chart-container"><canvas id="proteinChart"></canvas><BR></div>
-            <div class="chart-container"><canvas id="carbsChart"></canvas><BR></div>
+            <div class="chart-container"><canvas id="calorieChart"></canvas></div>
+            <div class="chart-container"><canvas id="proteinChart"></canvas></div>
+            <div class="chart-container"><canvas id="carbsChart"></canvas></div>
         </div>
         <div class="card">
             <h2>總訓練量視覺化</h2>
