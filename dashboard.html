@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日數據追蹤儀表板 (JSON 版)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0; --primary-color: #6200ea; --secondary-color: #03dac6; --border-color: #333; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1, h2 { text-align: center; color: var(--text-color); margin: 20px 0; }
+        .container { width: 100%; max-width: 900px; }
+        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .chart-container { position: relative; width: 100%; height: 400px; }
+        .table-container { overflow-x: auto; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; }
+        .summary-item { background-color: #2a2a2a; padding: 15px; border-radius: 8px; }
+        .summary-item h3 { margin-top: 0; font-size: 1em; color: var(--secondary-color); font-weight: normal; }
+        .summary-item p { font-size: 1.5em; font-weight: bold; margin-bottom: 0; color: var(--text-color); }
+        table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--primary-color); color: white; font-weight: bold; text-transform: uppercase; }
+        tbody tr:nth-child(even) { background-color: #2a2a2a; }
+        tbody tr:hover { background-color: #383838; transition: background-color 0.3s ease; }
+        .update-time { text-align: center; margin-top: -10px; margin-bottom: 20px; font-size: 0.9em; color: #aaa; }
+        .nav-link { text-align: center; margin-bottom: 20px; }
+        .nav-link a { color: var(--secondary-color); text-decoration: none; font-size: 1.1em; padding: 8px 15px; border: 1px solid var(--secondary-color); border-radius: 8px; transition: background-color 0.3s, color 0.3s; }
+        .nav-link a:hover { background-color: var(--secondary-color); color: var(--bg-color); }
+    </style>
+</head>
+<body>
+    <h1>變壯計畫：數據儀表板 💪</h1>
+    <div class="update-time">最後更新：<span id="lastUpdated"></span></div>
+    <div class="nav-link"><a href="./details.html">查看詳細數據資料 &raquo;</a></div>
+    <div class="container">
+        <div class="card">
+            <h2>數據摘要</h2>
+            <div id="summaryContainer" class="summary-grid"></div>
+        </div>
+        <div class="card">
+            <h2>營養數據視覺化</h2>
+            <div class="chart-container"><canvas id="calorieChart"></canvas></div>
+            <div class="chart-container"><canvas id="proteinChart"></canvas></div>
+            <div class="chart-container"><canvas id="carbsChart"></canvas></div>
+        </div>
+        <div class="card">
+            <h2>總訓練量視覺化</h2>
+            <div class="chart-container"><canvas id="workoutChart"></canvas></div>
+        </div>
+        <div class="card">
+            <h2>歷史數據總覽</h2>
+            <div class="table-container">
+                <h3>每日營養攝取數據</h3>
+                <table>
+                    <thead><tr><th>日期</th><th>總熱量 (大卡)</th><th>蛋白質 (公克)</th><th>碳水化合物 (公克)</th><th>脂肪 (公克)</th></tr></thead>
+                    <tbody id="nutritionTableBody"></tbody>
+                </table>
+                <h3 style="margin-top:20px;">每日總訓練量數據</h3>
+                <table>
+                    <thead><tr><th>日期</th><th>總訓練量 (kg)</th></tr></thead>
+                    <tbody id="workoutTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                initializeDashboard(data);
+            } catch (error) {
+                console.error("無法載入或解析數據:", error);
+                alert("數據載入失敗，請檢查 data.json 檔案是否存在且格式正確。");
+            }
+        });
+
+        function initializeDashboard(data) {
+            const { targets, dailyRecords } = data;
+            displaySummary(dailyRecords);
+            const labels = dailyRecords.map(record => record.date);
+            // 修改: 從 record.nutrition.total 獲取數據
+            const calorieActual = dailyRecords.map(record => record.nutrition.total.calories);
+            const proteinActual = dailyRecords.map(record => record.nutrition.total.protein);
+            const carbsActual = dailyRecords.map(record => record.nutrition.total.carbs);
+            // 修改: 從 record.workout 獲取 totalVolume
+            const workoutVolume = dailyRecords.map(record => record.workout.totalVolume);
+            const calorieTarget = Array(dailyRecords.length).fill(targets.calories);
+            const proteinTarget = Array(dailyRecords.length).fill(targets.protein);
+            const carbsTarget = Array(dailyRecords.length).fill(targets.carbs);
+            createChart('calorieChart', '每日熱量攝取與目標比較', labels, calorieActual, calorieTarget, '大卡 (kcal)');
+            createChart('proteinChart', '每日蛋白質攝取與目標比較', labels, proteinActual, proteinTarget, '公克 (g)');
+            createChart('carbsChart', '每日碳水化合物攝取與目標比較', labels, carbsActual, carbsTarget, '公克 (g)');
+            createWorkoutChart('workoutChart', '每日總訓練量趨勢', labels, workoutVolume, '公斤 (kg)');
+            populateNutritionTable(dailyRecords);
+            populateWorkoutTable(dailyRecords);
+            setLastUpdatedTime();
+        }
+
+        function displaySummary(records) {
+            const container = document.getElementById('summaryContainer');
+            if (!records || records.length === 0) { container.innerHTML = "<p>沒有足夠的數據進行摘要。</p>"; return; }
+            const totalDays = records.length;
+            // 修改: 從 total 物件計算
+            const totalCalories = records.reduce((sum, record) => sum + record.nutrition.total.calories, 0);
+            const totalProtein = records.reduce((sum, record) => sum + record.nutrition.total.protein, 0);
+            const totalVolume = records.reduce((sum, record) => sum + record.workout.totalVolume, 0);
+            const avgCalories = (totalCalories / totalDays).toFixed(1);
+            const avgProtein = (totalProtein / totalDays).toFixed(1);
+            container.innerHTML = `<div class="summary-item"><h3>平均每日熱量</h3><p>${avgCalories} kcal</p></div><div class="summary-item"><h3>平均每日蛋白質</h3><p>${avgProtein} g</p></div><div class="summary-item"><h3>期間總訓練量</h3><p>${totalVolume.toLocaleString()} kg</p></div>`;
+        }
+
+        function populateNutritionTable(records) {
+            const tableBody = document.getElementById('nutritionTableBody');
+            tableBody.innerHTML = '';
+            records.forEach(record => {
+                // 修改: 從 record.nutrition.total 獲取數據
+                const { calories, protein, carbs, fat } = record.nutrition.total;
+                const row = `<tr><td>${record.date}</td><td>${calories}</td><td>${protein}</td><td>${carbs}</td><td>${fat}</td></tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function populateWorkoutTable(records) {
+            const tableBody = document.getElementById('workoutTableBody');
+            tableBody.innerHTML = '';
+            records.forEach(record => {
+                // 修改: 從 record.workout 獲取 totalVolume
+                const row = `<tr><td>${record.date}</td><td>${record.workout.totalVolume}</td></tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function setLastUpdatedTime() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        function createChart(ctxId, chartTitle, labels, actualData, targetData, yAxisLabel) { const ctx = document.getElementById(ctxId).getContext('2d'); new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: "實際攝取量", data: actualData, borderColor: 'rgb(75, 192, 192)', tension: 0.3, fill: false }, { label: "每日目標", data: targetData, borderColor: 'rgb(255, 99, 132)', borderDash: [5, 5], tension: 0.3, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: chartTitle, font: { size: 16, weight: 'bold' }, color: '#e0e0e0' }, tooltip: { callbacks: { label: context => `${context.dataset.label}: ${context.raw} ${yAxisLabel}` } } }, scales: { y: { title: { display: true, text: yAxisLabel, color: '#e0e0e0' }, ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }, x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } } } } }); }
+        function createWorkoutChart(ctxId, chartTitle, labels, data, yAxisLabel) { const ctx = document.getElementById(ctxId).getContext('2d'); new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: "總訓練量", data: data, borderColor: 'rgb(54, 162, 235)', backgroundColor: 'rgba(54, 162, 235, 0.2)', tension: 0.3, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: chartTitle, font: { size: 16, weight: 'bold' }, color: '#e0e0e0' }, tooltip: { callbacks: { label: context => `總訓練量: ${context.raw} ${yAxisLabel}` } } }, scales: { y: { title: { display: true, text: yAxisLabel, color: '#e0e0e0' }, ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }, x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } } } } }); }
+    </script>
+</body>
+</html>
