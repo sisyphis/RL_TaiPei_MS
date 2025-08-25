@@ -113,13 +113,39 @@
       "date": "8/24",
       "nutrition": {
         "meals": [
-          { "type": "午餐", "calories": 800, "protein": 20, "carbs": 100, "fat": 25 }
+          { "type": "早餐", "calories": 365, "protein": 16, "carbs": 45, "fat": 14.5 },
+          { "type": "午餐", "calories": 800, "protein": 20, "carbs": 100, "fat": 25 },
+          { "type": "晚餐", "calories": 780, "protein": 40, "carbs": 80, "fat": 20 },
+          { "type": "其他", "calories": 140, "protein": 0, "carbs": 10, "fat": 0 }
         ],
-        "total": { "calories": 800, "protein": 20, "carbs": 100, "fat": 25 }
+        "total": { "calories": 2085, "protein": 76, "carbs": 235, "fat": 59.5 }
       },
       "workout": {
-        "exercises": [],
-        "totalVolume": 0
+        "exercises": [
+          { "name": "啞鈴集中彎舉", "weight": 8, "reps": 10, "sets": 4 }
+        ],
+        "totalVolume": 320
+      }
+    },
+    {
+      "date": "8/25",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 560, "protein": 17, "carbs": 67, "fat": 27 },
+          { "type": "午餐", "calories": 857, "protein": 55.1, "carbs": 70.8, "fat": 35.1 },
+          { "type": "晚餐", "calories": 975, "protein": 49, "carbs": 122.5, "fat": 25 }
+        ],
+        "total": { "calories": 2392, "protein": 121.1, "carbs": 260.3, "fat": 87.1 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "啞鈴臥推", "weight": 10, "reps": 13, "sets": 4 },
+          { "name": "啞鈴肩上推舉", "weight": 8, "reps": 12, "sets": 3 },
+          { "name": "上斜啞鈴臥推", "weight": 10, "reps": 12, "sets": 3 },
+          { "name": "啞鈴飛鳥", "weight": 8, "reps": 11, "sets": 3 },
+          { "name": "啞鈴側平舉", "weight": 4, "reps": 12, "sets": 4 }
+        ],
+        "totalVolume": 1624
       }
     }
   ]
