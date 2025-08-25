@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專案進度儀表板</title>
+    <style>
+        /* --- 全局樣式 --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 24px;
+        }
+        /* --- 儀表板網格佈局 --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 24px;
+        }
+        /* --- 專案卡片樣式 --- */
+        .project-card {
+            background-color: #16213e;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-top: 5px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        /* --- 卡片標題 --- */
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            color: #ffffff;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #0f3460;
+        }
+        /* --- 區塊樣式 --- */
+        .section {
+            background-color: rgba(15, 52, 96, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .section-title {
+            font-size: 0.9em;
+            color: #a0a0a0;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+        /* --- 總進度 (圓餅圖) --- */
+        .progress-summary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .donut-chart {
+            --size: 120px;
+            width: var(--size);
+            height: var(--size);
+            border-radius: 50%;
+            background: conic-gradient(var(--color-progress, #4caf50) calc(var(--p, 0) * 1%), #3a3a5e 0);
+            display: grid;
+            place-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+            position: relative;
+        }
+        .donut-chart::before {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            inset: 15%;
+            background: #16213e;
+        }
+        .progress-details {
+            text-align: center;
+        }
+        .progress-change {
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+        .progress-change-label {
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+        /* --- 任務列表 --- */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .task-item {
+            display: grid;
+            grid-template-columns: 1fr auto 60px;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+        }
+        .task-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .task-due-date {
+            font-size: 0.85em;
+            color: #a0a0a0;
+            background-color: #0f3460;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #3a3a5e;
+            border-radius: 8px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--color-progress, #4caf50);
+            border-radius: 8px;
+            transition: width 0.5s ease-in-out;
+        }
+        /* --- 狀態顏色 --- */
+        .status-green { --color-progress: #28a745; border-color: #28a745; }
+        .status-yellow { --color-progress: #ffc107; border-color: #ffc107; }
+        .status-red { --color-progress: #dc3545; border-color: #dc3545; }
+        .status-blue { --color-progress: #007bff; border-color: #007bff; }
+
+        .text-green { color: #28a745; }
+        .text-yellow { color: #ffc107; }
+        .text-red { color: #dc3545; }
+        .text-blue { color: #007bff; }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard" id="dashboard-container">
+        <!-- 專案卡片將由 JavaScript 動態生成於此 -->
+    </div>
+
+    <!-- 這是你的數據庫 -->
+    <script src="data.js"></script>
+    
+    <!-- 這是將數據變成畫面的魔法 -->
+    <script>
+        // 當頁面載入完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('dashboard-container');
+            
+            // 遍歷 data.js 中的每一個專案數據
+            projectsData.forEach(project => {
+                // 創建一個專案卡片的 HTML 元素
+                const card = document.createElement('div');
+                card.className = `project-card status-${project.status}`;
+                
+                // --- 生成任務列表的 HTML ---
+                let tasksHtml = '';
+                project.tasks.forEach(task => {
+                    tasksHtml += `
+                        <div class="task-item">
+                            <span class="task-name">${task.name}</span>
+                            <span class="task-due-date">${task.dueDate}</span>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${task.progress}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // --- 決定進度變化的箭頭和顏色 ---
+                let changeIcon = '&#9654;'; // ►
+                let changeClass = 'text-yellow';
+                if (project.progressChange > 0) {
+                    changeIcon = '&#9650;'; // ▲
+                    changeClass = 'text-green';
+                } else if (project.progressChange < 0) {
+                    changeIcon = '&#9660;'; // ▼
+                    changeClass = 'text-red';
+                }
+
+                // --- 組合完整的卡片 HTML 內容 ---
+                card.innerHTML = `
+                    <div class="card-title">${project.title}</div>
+                    
+                    <div class="section">
+                        <div class="section-title">總體進度</div>
+                        <div class="progress-summary">
+                            <div class="donut-chart" style="--p:${project.totalProgress};">
+                                <span style="z-index: 1;">${project.totalProgress}%</span>
+                            </div>
+                            <div class="progress-details">
+                                <div class="progress-change ${changeClass}">
+                                    ${changeIcon} ${Math.abs(project.progressChange)}%
+                                </div>
+                                <div class="progress-change-label">上週進度變化</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">本週任務 (${project.weekRange})</div>
+                        <div class="task-list">
+                            ${tasksHtml}
+                        </div>
+                    </div>
+                `;
+                
+                // 將生成好的卡片添加到儀表板容器中
+                container.appendChild(card);
+            });
+        });
+    </script>
+
+</body>
+</html>
