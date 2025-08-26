@@ -147,6 +147,25 @@
         ],
         "totalVolume": 1624
       }
+    },
+    {
+      "date": "8/26",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 542, "protein": 19.6, "carbs": 39.4, "fat": 35.8 },
+          { "type": "午餐", "calories": 790, "protein": 44.9, "carbs": 80.6, "fat": 35.2 },
+          { "type": "晚餐", "calories": 1260, "protein": 45, "carbs": 175, "fat": 25 },
+          { "type": "其他", "calories": 140, "protein": 0, "carbs": 10, "fat": 0 },
+          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
+        ],
+        "total": { "calories": 2827.8, "protein": 128.5, "carbs": 328.7, "fat": 98.1 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "啞鈴集中彎舉", "weight": 7, "reps": 12, "sets": 4 }
+        ],
+        "totalVolume": 336
+      }
     }
   ]
 }
