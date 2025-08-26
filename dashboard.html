@@ -12,19 +12,8 @@
         h1, h2 { text-align: center; color: var(--text-color); margin: 20px 0; }
         .container { width: 100%; max-width: 900px; }
         .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); margin-bottom: 20px; border: 1px solid var(--border-color); }
-        .chart-container { 
-            position: relative; 
-            width: 100%; 
-            height: 400px; 
-            /* --- 修改 START --- */
-            margin-bottom: 40px; /* 新增：增加圖表之間的底部間距 */
-            /* --- 修改 END --- */
-        }
-        /* --- 新增 START --- */
-        .card .chart-container:last-child {
-            margin-bottom: 0; /* 新增：移除卡片中最後一個圖表的底部間距，避免多餘空白 */
-        }
-        /* --- 新增 END --- */
+        .chart-container { position: relative; width: 100%; height: 400px; margin-bottom: 40px; }
+        .card .chart-container:last-child { margin-bottom: 0; }
         .table-container { overflow-x: auto; }
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; }
         .summary-item { background-color: #2a2a2a; padding: 15px; border-radius: 8px; }
@@ -33,12 +22,23 @@
         table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
         th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
         th { background-color: var(--primary-color); color: white; font-weight: bold; text-transform: uppercase; }
-        tbody tr:nth-child(even) { background-color: #2a2a2a; }
-        tbody tr:hover { background-color: #383838; transition: background-color 0.3s ease; }
         .update-time { text-align: center; margin-top: -10px; margin-bottom: 20px; font-size: 0.9em; color: #aaa; }
         .nav-link { text-align: center; margin-bottom: 20px; }
         .nav-link a { color: var(--secondary-color); text-decoration: none; font-size: 1.1em; padding: 8px 15px; border: 1px solid var(--secondary-color); border-radius: 8px; transition: background-color 0.3s, color 0.3s; }
         .nav-link a:hover { background-color: var(--secondary-color); color: var(--bg-color); }
+
+        /* --- 收合功能的樣式 --- */
+        .month-summary-row { cursor: pointer; font-weight: bold; background-color: #2c2c2c; transition: background-color 0.2s ease; }
+        .month-summary-row:hover { background-color: #383838; }
+        .month-summary-row td:first-child { color: var(--secondary-color); }
+        .toggle-icon { display: inline-block; width: 20px; font-family: monospace; font-size: 1.2em; }
+        .details-container-row { display: none; }
+        .details-container-row.visible { display: table-row; }
+        .nested-table-container { padding: 10px 20px; background-color: rgba(0,0,0,0.2); }
+        .nested-table { width: 100%; border-collapse: collapse; }
+        .nested-table td, .nested-table th { border: none; border-bottom: 1px solid #444; }
+        .nested-table tr:last-child td { border-bottom: none; }
+        .nested-table tbody tr:nth-child(even) { background-color: #2a2a2a; }
     </style>
 </head>
 <body>
@@ -65,12 +65,12 @@
             <div class="table-container">
                 <h3>每日營養攝取數據</h3>
                 <table>
-                    <thead><tr><th>日期</th><th>總熱量 (大卡)</th><th>蛋白質 (公克)</th><th>碳水化合物 (公克)</th><th>脂肪 (公克)</th></tr></thead>
+                    <thead><tr><th>月份</th><th>摘要</th><th>平均熱量</th><th>平均蛋白質</th><th>平均碳水</th><th>平均脂肪</th></tr></thead>
                     <tbody id="nutritionTableBody"></tbody>
                 </table>
                 <h3 style="margin-top:20px;">每日總訓練量數據</h3>
                 <table>
-                    <thead><tr><th>日期</th><th>總訓練量 (kg)</th></tr></thead>
+                    <thead><tr><th>月份</th><th>摘要</th><th colspan="4">平均總訓練量 (kg)</th></tr></thead>
                     <tbody id="workoutTableBody"></tbody>
                 </table>
             </div>
@@ -91,13 +91,13 @@
 
         function initializeDashboard(data) {
             const { targets, dailyRecords } = data;
+            
+            // --- 圖表和摘要維持原樣，使用全部數據 ---
             displaySummary(dailyRecords);
             const labels = dailyRecords.map(record => record.date);
-            // 修改: 從 record.nutrition.total 獲取數據
             const calorieActual = dailyRecords.map(record => record.nutrition.total.calories);
             const proteinActual = dailyRecords.map(record => record.nutrition.total.protein);
             const carbsActual = dailyRecords.map(record => record.nutrition.total.carbs);
-            // 修改: 從 record.workout 獲取 totalVolume
             const workoutVolume = dailyRecords.map(record => record.workout.totalVolume);
             const calorieTarget = Array(dailyRecords.length).fill(targets.calories);
             const proteinTarget = Array(dailyRecords.length).fill(targets.protein);
@@ -106,43 +106,91 @@
             createChart('proteinChart', '每日蛋白質攝取與目標比較', labels, proteinActual, proteinTarget, '公克 (g)');
             createChart('carbsChart', '每日碳水化合物攝取與目標比較', labels, carbsActual, carbsTarget, '公克 (g)');
             createWorkoutChart('workoutChart', '每日總訓練量趨勢', labels, workoutVolume, '公斤 (kg)');
-            populateNutritionTable(dailyRecords);
-            populateWorkoutTable(dailyRecords);
+            
+            // --- 修改: 表格部分改用按月份分組的數據 ---
+            const recordsByMonth = groupRecordsByMonth(dailyRecords);
+            populateAccordionTables(recordsByMonth);
+
             setLastUpdatedTime();
+        }
+
+        function groupRecordsByMonth(records) {
+            return records.reduce((acc, record) => {
+                const month = record.date.split('/')[0];
+                const year = new Date().getFullYear();
+                const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+                if (!acc[monthKey]) acc[monthKey] = [];
+                acc[monthKey].push(record);
+                return acc;
+            }, {});
+        }
+
+        function populateAccordionTables(recordsByMonth) {
+            const nutritionBody = document.getElementById('nutritionTableBody');
+            const workoutBody = document.getElementById('workoutTableBody');
+            nutritionBody.innerHTML = '';
+            workoutBody.innerHTML = '';
+            const sortedMonths = Object.keys(recordsByMonth).sort().reverse();
+
+            for (const monthKey of sortedMonths) {
+                const monthRecords = recordsByMonth[monthKey];
+                const numDays = monthRecords.length;
+
+                const avgNutrition = {
+                    calories: monthRecords.reduce((sum, r) => sum + r.nutrition.total.calories, 0) / numDays,
+                    protein: monthRecords.reduce((sum, r) => sum + r.nutrition.total.protein, 0) / numDays,
+                    carbs: monthRecords.reduce((sum, r) => sum + r.nutrition.total.carbs, 0) / numDays,
+                    fat: monthRecords.reduce((sum, r) => sum + r.nutrition.total.fat, 0) / numDays,
+                };
+                const avgWorkoutVolume = monthRecords.reduce((sum, r) => sum + r.workout.totalVolume, 0) / numDays;
+
+                const nutritionSummaryRow = `<tr class="month-summary-row" data-target-id="nutrition-${monthKey}"><td><span class="toggle-icon">[+]</span> ${monthKey}</td><td>月平均 (${numDays} 天)</td><td>${avgNutrition.calories.toFixed(1)}</td><td>${avgNutrition.protein.toFixed(1)}</td><td>${avgNutrition.carbs.toFixed(1)}</td><td>${avgNutrition.fat.toFixed(1)}</td></tr>`;
+                const nutritionDetailsRow = `<tr id="nutrition-${monthKey}" class="details-container-row"><td colspan="6"><div class="nested-table-container">${generateNutritionDetailsTable(monthRecords)}</div></td></tr>`;
+                nutritionBody.innerHTML += nutritionSummaryRow + nutritionDetailsRow;
+
+                const workoutSummaryRow = `<tr class="month-summary-row" data-target-id="workout-${monthKey}"><td><span class="toggle-icon">[+]</span> ${monthKey}</td><td>月平均 (${numDays} 天)</td><td colspan="4">${avgWorkoutVolume.toFixed(1)}</td></tr>`;
+                const workoutDetailsRow = `<tr id="workout-${monthKey}" class="details-container-row"><td colspan="6"><div class="nested-table-container">${generateWorkoutDetailsTable(monthRecords)}</div></td></tr>`;
+                workoutBody.innerHTML += workoutSummaryRow + workoutDetailsRow;
+            }
+            
+            document.querySelectorAll('.month-summary-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    const targetId = row.dataset.targetId;
+                    const detailsRow = document.getElementById(targetId);
+                    const icon = row.querySelector('.toggle-icon');
+                    detailsRow.classList.toggle('visible');
+                    icon.textContent = detailsRow.classList.contains('visible') ? '[-]' : '[+]';
+                });
+            });
+        }
+
+        function generateNutritionDetailsTable(records) {
+            let tableHTML = '<table class="nested-table"><thead><tr><th>日期</th><th>總熱量</th><th>總蛋白質</th><th>總碳水</th><th>總脂肪</th></tr></thead><tbody>';
+            records.forEach(record => {
+                const { calories, protein, carbs, fat } = record.nutrition.total;
+                tableHTML += `<tr><td>${record.date}</td><td>${calories}</td><td>${protein}</td><td>${carbs}</td><td>${fat}</td></tr>`;
+            });
+            return tableHTML + '</tbody></table>';
+        }
+
+        function generateWorkoutDetailsTable(records) {
+            let tableHTML = '<table class="nested-table"><thead><tr><th>日期</th><th>總訓練量 (kg)</th></tr></thead><tbody>';
+            records.forEach(record => {
+                tableHTML += `<tr><td>${record.date}</td><td>${record.workout.totalVolume}</td></tr>`;
+            });
+            return tableHTML + '</tbody></table>';
         }
 
         function displaySummary(records) {
             const container = document.getElementById('summaryContainer');
             if (!records || records.length === 0) { container.innerHTML = "<p>沒有足夠的數據進行摘要。</p>"; return; }
             const totalDays = records.length;
-            // 修改: 從 total 物件計算
             const totalCalories = records.reduce((sum, record) => sum + record.nutrition.total.calories, 0);
             const totalProtein = records.reduce((sum, record) => sum + record.nutrition.total.protein, 0);
             const totalVolume = records.reduce((sum, record) => sum + record.workout.totalVolume, 0);
             const avgCalories = (totalCalories / totalDays).toFixed(1);
             const avgProtein = (totalProtein / totalDays).toFixed(1);
             container.innerHTML = `<div class="summary-item"><h3>平均每日熱量</h3><p>${avgCalories} kcal</p></div><div class="summary-item"><h3>平均每日蛋白質</h3><p>${avgProtein} g</p></div><div class="summary-item"><h3>期間總訓練量</h3><p>${totalVolume.toLocaleString()} kg</p></div>`;
-        }
-
-        function populateNutritionTable(records) {
-            const tableBody = document.getElementById('nutritionTableBody');
-            tableBody.innerHTML = '';
-            records.forEach(record => {
-                // 修改: 從 record.nutrition.total 獲取數據
-                const { calories, protein, carbs, fat } = record.nutrition.total;
-                const row = `<tr><td>${record.date}</td><td>${calories}</td><td>${protein}</td><td>${carbs}</td><td>${fat}</td></tr>`;
-                tableBody.innerHTML += row;
-            });
-        }
-
-        function populateWorkoutTable(records) {
-            const tableBody = document.getElementById('workoutTableBody');
-            tableBody.innerHTML = '';
-            records.forEach(record => {
-                // 修改: 從 record.workout 獲取 totalVolume
-                const row = `<tr><td>${record.date}</td><td>${record.workout.totalVolume}</td></tr>`;
-                tableBody.innerHTML += row;
-            });
         }
 
         function setLastUpdatedTime() {
