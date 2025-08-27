@@ -155,7 +155,6 @@
           { "type": "早餐", "calories": 542, "protein": 19.6, "carbs": 39.4, "fat": 35.8 },
           { "type": "午餐", "calories": 790, "protein": 44.9, "carbs": 80.6, "fat": 35.2 },
           { "type": "晚餐", "calories": 1260, "protein": 45, "carbs": 175, "fat": 25 },
-          { "type": "其他", "calories": 140, "protein": 0, "carbs": 10, "fat": 0 },
           { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
         ],
         "total": { "calories": 2827.8, "protein": 128.5, "carbs": 328.7, "fat": 98.1 }
@@ -165,6 +164,27 @@
           { "name": "啞鈴集中彎舉", "weight": 7, "reps": 12, "sets": 4 }
         ],
         "totalVolume": 336
+      }
+    },
+    {
+      "date": "8/27",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 442, "protein": 14.6, "carbs": 49.4, "fat": 20.8 },
+          { "type": "午餐", "calories": 677, "protein": 30.1, "carbs": 82.8, "fat": 22.1 },
+          { "type": "晚餐", "calories": 1065, "protein": 42.5, "carbs": 125, "fat": 35 }
+        ],
+        "total": { "calories": 2184, "protein": 87.2, "carbs": 257.2, "fat": 77.9 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "啞鈴硬舉", "weight": 10, "reps": 13, "sets": 4 },
+          { "name": "啞鈴划船", "weight": 8, "reps": 12, "sets": 4 },
+          { "name": "啞鈴飛鳥", "weight": 8, "reps": 12, "sets": 4 },
+          { "name": "啞鈴肩上推舉", "weight": 8, "reps": 12, "sets": 4 },
+          { "name": "啞鈴酒杯式深蹲", "weight": 12, "reps": 12, "sets": 4 }
+        ],
+        "totalVolume": 2248
       }
     }
   ]
