@@ -172,9 +172,10 @@
         "meals": [
           { "type": "早餐", "calories": 442, "protein": 14.6, "carbs": 49.4, "fat": 20.8 },
           { "type": "午餐", "calories": 677, "protein": 30.1, "carbs": 82.8, "fat": 22.1 },
-          { "type": "晚餐", "calories": 1065, "protein": 42.5, "carbs": 125, "fat": 35 }
+          { "type": "晚餐", "calories": 1065, "protein": 42.5, "carbs": 125, "fat": 35 },
+          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
         ],
-        "total": { "calories": 2184, "protein": 87.2, "carbs": 257.2, "fat": 77.9 }
+        "total": { "calories": 2279.8, "protein": 105.8, "carbs": 261.3, "fat": 79 }
       },
       "workout": {
         "exercises": [
@@ -185,6 +186,45 @@
           { "name": "啞鈴酒杯式深蹲", "weight": 12, "reps": 12, "sets": 4 }
         ],
         "totalVolume": 2248
+      }
+    },
+    {
+      "date": "8/28",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 442, "protein": 14.6, "carbs": 49.4, "fat": 20.8 },
+          { "type": "午餐", "calories": 880, "protein": 41, "carbs": 83, "fat": 40.5 },
+          { "type": "晚餐", "calories": 1025, "protein": 43, "carbs": 105, "fat": 35 }
+        ],
+        "total": { "calories": 2347, "protein": 98.6, "carbs": 237.4, "fat": 96.3 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "集中彎舉", "weight": 7, "reps": 10, "sets": 4 }
+        ],
+        "totalVolume": 280
+      }
+    },
+    {
+      "date": "8/29",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 642, "protein": 19.6, "carbs": 72.4, "fat": 30.8 },
+          { "type": "午餐", "calories": 1185, "protein": 40, "carbs": 150, "fat": 35 },
+          { "type": "晚餐", "calories": 1310, "protein": 51.5, "carbs": 155, "fat": 50.5 },
+          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
+        ],
+        "total": { "calories": 3232.8, "protein": 129.7, "carbs": 381.5, "fat": 117.4 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "地板啞鈴臥推", "weight": 10, "reps": 13, "sets": 4 },
+          { "name": "啞鈴弓步蹲", "weight": 10, "reps": 13, "sets": 4 },
+          { "name": "啞鈴槌式彎舉", "weight": 6, "reps": 13, "sets": 4 },
+          { "name": "啞鈴三頭肌伸展", "weight": 6, "reps": 12, "sets": 4 },
+          { "name": "俯身啞鈴飛鳥", "weight": 4, "reps": 12, "sets": 3 }
+        ],
+        "totalVolume": 1784
       }
     }
   ]
