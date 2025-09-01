@@ -211,10 +211,9 @@
         "meals": [
           { "type": "早餐", "calories": 642, "protein": 19.6, "carbs": 72.4, "fat": 30.8 },
           { "type": "午餐", "calories": 1185, "protein": 40, "carbs": 150, "fat": 35 },
-          { "type": "晚餐", "calories": 1310, "protein": 51.5, "carbs": 155, "fat": 50.5 },
-          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
+          { "type": "晚餐", "calories": 1310, "protein": 51.5, "carbs": 155, "fat": 50.5 }
         ],
-        "total": { "calories": 3232.8, "protein": 129.7, "carbs": 381.5, "fat": 117.4 }
+        "total": { "calories": 3137, "protein": 111.1, "carbs": 377.4, "fat": 116.3 }
       },
       "workout": {
         "exercises": [
@@ -225,6 +224,52 @@
           { "name": "俯身啞鈴飛鳥", "weight": 4, "reps": 12, "sets": 3 }
         ],
         "totalVolume": 1784
+      }
+    },
+    {
+      "date": "8/30",
+      "nutrition": {
+        "meals": [
+          { "type": "午餐", "calories": 772, "protein": 28.8, "carbs": 127.66, "fat": 16.2 },
+          { "type": "晚餐", "calories": 1143, "protein": 29.8, "carbs": 184.86, "fat": 26.8 },
+          { "type": "宵夜", "calories": 487, "protein": 15.4, "carbs": 54.5, "fat": 12.1 }
+        ],
+        "total": { "calories": 2402, "protein": 74, "carbs": 367.02, "fat": 55.1 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "集中彎舉", "weight": 7, "reps": 12, "sets": 4 }
+        ],
+        "totalVolume": 336
+      }
+    },
+    {
+      "date": "8/31",
+      "nutrition": {
+        "meals": [
+          { "type": "午餐", "calories": 789, "protein": 26.9, "carbs": 135.7, "fat": 15.2 },
+          { "type": "晚餐", "calories": 1030, "protein": 31.5, "carbs": 200.5, "fat": 51 },
+          { "type": "宵夜", "calories": 797, "protein": 23.6, "carbs": 86, "fat": 28.8 }
+        ],
+        "total": { "calories": 2616, "protein": 82, "carbs": 422.2, "fat": 95 }
+      },
+      "workout": {
+        "exercises": [],
+        "totalVolume": 0
+      }
+    },
+    {
+      "date": "9/1",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 492, "protein": 20, "carbs": 59, "fat": 25.5 },
+          { "type": "午餐", "calories": 840, "protein": 51, "carbs": 90, "fat": 40.5 }
+        ],
+        "total": { "calories": 1332, "protein": 71, "carbs": 149, "fat": 66 }
+      },
+      "workout": {
+        "exercises": [],
+        "totalVolume": 0
       }
     }
   ]
