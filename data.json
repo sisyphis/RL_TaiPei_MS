@@ -356,6 +356,60 @@
         ],
         "totalVolume": 2024
       }
+    },
+    {
+      "date": "9/6",
+      "nutrition": {
+        "meals": [
+          { "type": "午餐", "calories": 1250, "protein": 60, "carbs": 150, "fat": 45 },
+          { "type": "晚餐", "calories": 650, "protein": 35, "carbs": 45, "fat": 30 },
+          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
+        ],
+        "total": { "calories": 1995.8, "protein": 113.6, "carbs": 199.1, "fat": 76.1 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "集中彎舉", "weight": 7, "reps": 10, "sets": 4 }
+        ],
+        "totalVolume": 280
+      }
+    },
+    {
+      "date": "9/7",
+      "nutrition": {
+        "meals": [
+          { "type": "午餐", "calories": 900, "protein": 40, "carbs": 93, "fat": 31 },
+          { "type": "晚餐", "calories": 900, "protein": 40, "carbs": 85, "fat": 31 },
+          { "type": "宵夜", "calories": 365, "protein": 9.5, "carbs": 46, "fat": 6 }
+        ],
+        "total": { "calories": 2165, "protein": 89.5, "carbs": 224, "fat": 68 }
+      },
+      "workout": {
+        "exercises": [],
+        "totalVolume": 0
+      }
+    },
+    {
+      "date": "9/8",
+      "nutrition": {
+        "meals": [
+          { "type": "早餐", "calories": 590, "protein": 18, "carbs": 70, "fat": 25.5 },
+          { "type": "午餐", "calories": 695, "protein": 36, "carbs": 59, "fat": 28.5 },
+          { "type": "晚餐", "calories": 1050, "protein": 56, "carbs": 150, "fat": 36 },
+          { "type": "那堤蛋白", "calories": 95.8, "protein": 18.6, "carbs": 4.1, "fat": 1.1 }
+        ],
+        "total": { "calories": 2430.8, "protein": 128.6, "carbs": 283.1, "fat": 91.1 }
+      },
+      "workout": {
+        "exercises": [
+          { "name": "地板啞鈴臥推", "weight": 12, "reps": 13, "sets": 4 },
+          { "name": "上斜啞鈴臥推", "weight": 10, "reps": 12, "sets": 4 },
+          { "name": "啞鈴飛鳥", "weight": 8, "reps": 12, "sets": 3 },
+          { "name": "啞鈴肩上推舉", "weight": 6, "reps": 10, "sets": 3 },
+          { "name": "啞鈴側平舉", "weight": 6, "reps": 12, "sets": 4 }
+        ],
+        "totalVolume": 1860
+      }
     }
   ]
 }
